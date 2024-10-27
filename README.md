@@ -82,14 +82,13 @@
     </style>
 </head>
 <body>
-    <h1>電腦狀態監控儀表板</h1>
     <div class="dashboard-container" id="dashboard">
         <!-- 電腦卡片將動態生成 -->
     </div>
 
     <script>
         // 後端 API URL
-        const backendApiUrl = 'https://3701622c9ed9.ngrok.app/api/systeminfo';
+        const backendApiUrl = 'https://ba75f9d5899b.ngrok.app/api/systeminfo';
 
         // 更新間隔時間（毫秒）
         const updateInterval = 1000; // 可以自由設定的參數，例如每 1000 毫秒（1 秒）更新一次
