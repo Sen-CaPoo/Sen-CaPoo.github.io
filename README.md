@@ -1,215 +1,123 @@
-<html lang="zh-TW">
+<!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電腦狀態監控儀表板</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* 保持原有的 CSS 不變 */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fa;
-            color: #333;
-            padding: 20px;
-        }
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .computer-card {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            transition: box-shadow 0.3s ease;
-        }
-        .computer-card.alert {
-            border: 2px solid #ff0000;
-            animation: pulse 1s infinite;
-        }
-        .computer-card.warning {
-            border: 2px solid #ffcc00;
-            background-color: #fff8e1;
-        }
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 5px #ff0000;
-            }
-            50% {
-                box-shadow: 0 0 20px #ff0000;
-            }
-            100% {
-                box-shadow: 0 0 5px #ff0000;
-            }
-        }
-        .computer-card:hover {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        }
-        .computer-name {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .cpu-usage, .memory-usage, .disk-space {
-            margin-bottom: 10px;
-            font-size: 1em;
-        }
-        .progress-bar {
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            height: 20px;
-            margin-bottom: 5px;
-        }
-        .progress-bar-inner {
-            height: 100%;
-            text-align: center;
-            line-height: 20px;
-            color: #fff;
-            border-radius: 10px;
-        }
-        .cpu-bar-inner {
-            background-color: #ff6b6b;
-        }
-        .memory-bar-inner {
-            background-color: #4caf50;
-        }
-        .disk-bar-inner {
-            background-color: #2196f3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub 專業介紹</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    /* 重設與基本樣式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0d47a1, #1976d2);
+      color: #ffffff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 50px 20px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    header p {
+      font-size: 1.2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .section {
+      padding: 50px 20px;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      width: 300px;
+      transition: transform 0.3s ease, background 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .card h3 {
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+    }
+    .card p {
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      margin-top: 50px;
+    }
+    @media (max-width: 768px) {
+      .cards {
+        flex-direction: column;
+        align-items: center;
+      }
+      .card {
+        width: 80%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard-container" id="dashboard">
-        <!-- 電腦卡片將動態生成 -->
-    </div>
-
-    <script>
-        // 後端 API URL
-        const backendApiUrl = 'https://ba75f9d5899b.ngrok.app/api/systeminfo';
-
-        // 更新間隔時間（毫秒）
-        const updateInterval = 1000; // 可以自由設定的參數，例如每 1000 毫秒（1 秒）更新一次
-
-        // 取得 API 數據
-        async function fetchComputerData() {
-            try {
-                const response = await fetch(backendApiUrl);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data from backend');
-                }
-                const computers = await response.json();
-                updateDashboard(computers);
-            } catch (error) {
-                console.error(error);
-                // 顯示錯誤訊息
-                const dashboard = document.getElementById("dashboard");
-                dashboard.innerHTML = `<div class="computer-card warning">
-                    <div class="computer-name">錯誤</div>
-                    <div>無法取得監控數據，請稍後再試。</div>
-                </div>`;
-            }
-        }
-
-        function createComputerCard(computer) {
-            const card = document.createElement("div");
-            card.classList.add("computer-card");
-
-            // 如果是無法取得數據的情況，標示為警告
-            if (computer.error) {
-                card.classList.add("warning");
-                const name = document.createElement("div");
-                name.classList.add("computer-name");
-                name.textContent = computer.computerName;
-                const warningMessage = document.createElement("div");
-                warningMessage.textContent = computer.message || "無法取得數據，該主機可能停機。";
-                card.appendChild(name);
-                card.appendChild(warningMessage);
-                return card;
-            }
-
-            // 門檻值設置
-            const cpuThreshold = 80;
-            const memoryThreshold = 2; // GB
-            const diskThreshold = 10; // GB
-
-            // 檢查是否超過門檻
-            if (computer.cpuUsage > cpuThreshold || computer.availableMemoryGB < memoryThreshold || computer.availableDiskSpaceGB < diskThreshold) {
-                card.classList.add("alert");
-            }
-
-            const name = document.createElement("div");
-            name.classList.add("computer-name");
-            name.textContent = computer.computerName;
-
-            const ipAddress = document.createElement("div");
-            ipAddress.classList.add("ip-address");
-            ipAddress.innerHTML = `IP 位址: ${computer.ipAddress}`;
-
-            const cpuUsage = document.createElement("div");
-            cpuUsage.classList.add("cpu-usage");
-            cpuUsage.innerHTML = `CPU 使用率: ${computer.cpuUsage.toFixed(2)}%`;
-
-            const cpuProgressBar = document.createElement("div");
-            cpuProgressBar.classList.add("progress-bar");
-            const cpuProgressInner = document.createElement("div");
-            cpuProgressInner.classList.add("progress-bar-inner", "cpu-bar-inner");
-            cpuProgressInner.style.width = `${computer.cpuUsage}%`;
-            cpuProgressInner.textContent = `${computer.cpuUsage.toFixed(2)}%`;
-            cpuProgressBar.appendChild(cpuProgressInner);
-
-            const memoryUsage = document.createElement("div");
-            memoryUsage.classList.add("memory-usage");
-            memoryUsage.innerHTML = `剩餘可用記憶體: ${computer.availableMemoryGB.toFixed(2)} GB`;
-
-            const memoryProgressBar = document.createElement("div");
-            memoryProgressBar.classList.add("progress-bar");
-            const memoryProgressInner = document.createElement("div");
-            memoryProgressInner.classList.add("progress-bar-inner", "memory-bar-inner");
-            const memoryPercentage = 100-(((computer.availableMemoryGB - memoryThreshold) / computer.availableMemoryGB) * 100);
-            memoryProgressInner.style.width = `${Math.min(memoryPercentage, 100)}%`;
-            memoryProgressInner.textContent = `${Math.min(memoryPercentage.toFixed(1), 100)}%`;
-            memoryProgressBar.appendChild(memoryProgressInner);
-
-            const diskSpace = document.createElement("div");
-            diskSpace.classList.add("disk-space");
-            diskSpace.innerHTML = `剩餘磁碟空間: ${computer.availableDiskSpaceGB.toFixed(2)} GB`;
-
-            const diskProgressBar = document.createElement("div");
-            diskProgressBar.classList.add("progress-bar");
-            const diskProgressInner = document.createElement("div");
-            diskProgressInner.classList.add("progress-bar-inner", "disk-bar-inner");
-            const diskPercentage = 100-(((computer.availableDiskSpaceGB - diskThreshold) / computer.availableDiskSpaceGB) * 100);
-            diskProgressInner.style.width = `${Math.min(diskPercentage, 100)}%`;
-            diskProgressInner.textContent = `${Math.min(diskPercentage.toFixed(1), 100)}%`;
-            diskProgressBar.appendChild(diskProgressInner);
-
-            card.appendChild(name);
-            card.appendChild(ipAddress);
-            card.appendChild(cpuUsage);
-            card.appendChild(cpuProgressBar);
-            card.appendChild(memoryUsage);
-            card.appendChild(memoryProgressBar);
-            card.appendChild(diskSpace);
-            card.appendChild(diskProgressBar);
-
-            return card;
-        }
-
-        function updateDashboard(computers) {
-            const dashboard = document.getElementById("dashboard");
-            dashboard.innerHTML = "";
-            computers.forEach(computer => {
-                const card = createComputerCard(computer);
-                dashboard.appendChild(card);
-            });
-        }
-
-        // 初始化，呼叫後端 API 並定期更新儀表板
-        fetchComputerData(); // 立即呼叫一次
-        setInterval(fetchComputerData, updateInterval);
-    </script>
+  <header>
+    <h1>GitHub</h1>
+    <p>專業、創新的開發者協作平台</p>
+  </header>
+  <div class="container">
+    <section class="section">
+      <h2 class="section-title">為何選擇 GitHub？</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>版本控制</h3>
+          <p>以 Git 為核心，提供強大的版本管理與協作功能，讓每次提交都有跡可循。</p>
+        </div>
+        <div class="card">
+          <h3>協作無縫</h3>
+          <p>全球開發者齊聚一堂，共同打造高品質軟體，促進知識共享與交流。</p>
+        </div>
+        <div class="card">
+          <h3>社群支持</h3>
+          <p>豐富的社群資源與技術討論，讓您在解決問題的路上不再孤單。</p>
+        </div>
+      </div>
+    </section>
+    <section class="section">
+      <h2 class="section-title">無限創新</h2>
+      <p style="text-align:center; font-size:1.2rem; max-width:800px; margin:0 auto;">
+        GitHub 不僅是代碼的儲存庫，更是開發者思想的交流平臺。從初學者到專業人士，皆能在這裡找到最適合自己的開發方式與創新靈感。
+      </p>
+    </section>
+  </div>
+  <footer>
+    <p>&copy; 2025 GitHub 專業介紹. All rights reserved.</p>
+  </footer>
 </body>
 </html>
